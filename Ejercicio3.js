@@ -1,0 +1,39 @@
+const Sequelize = require('sequelize');
+
+const sequelize = new Sequelize('postgres', 'postgres', 'root', {
+    host: 'localhost',
+    dialect: 'postgres'
+});
+
+sequelize.authenticate().then(() => {
+    console.log('La conexión se estableció correctamente');
+})
+.catch( err => {
+    console.error('No se pudo establecer la conexión con la base de datos: ', err);
+});
+
+/* Creo el auto*/
+class Cars extends Sequelize.Model {}
+Cars.init({
+    marca: Sequelize.STRING,
+    modelo: Sequelize.STRING,
+    anio: Sequelize.STRING
+}, {sequelize, modelName: 'cars'});
+
+sequelize.sync()
+    .then(() => Cars.bulkCreate([
+        {marca: 'Subaru', modelo:'Impreza', anio: '1999'},
+        {marca: 'Mitsubishi', modelo: 'Lancer Evo', anio: '1998'},
+        {marca: 'Lancia', modelo:'Delta', anio:'1998'}
+    ], {ignoreDuplicates:true})).then(() => {
+        console.log("Se insertaron los registros");
+    });
+
+sequelize.sync()
+    .then(() => Cars.update({anio:'1999'}, {
+        where: {
+            anio: '1998'
+        }
+    }).then(() => {
+        console.log("Se actualizaron los registros");
+    }));
